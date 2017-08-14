@@ -2,3 +2,6 @@ doc
 coverage
 .yardoc
 Gemfile.lock
+.ruby-version
+.ruby-gemset
+.idea
