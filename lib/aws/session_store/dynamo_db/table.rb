@@ -26,11 +26,11 @@ module AWS::SessionStore::DynamoDB
           throughput(config.read_capacity, config.write_capacity)
         )
       config.dynamo_db_client.create_table(ddb_options)
-      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} created, waiting for activation...\n"
+      AWS::SessionStore::DynamoDB.logger.debug("Table #{config.table_name} created, waiting for activation...\n")
       block_until_created(config)
-      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} is now ready to use.\n"
+      AWS::SessionStore::DynamoDB.logger.debug("Table #{config.table_name} is now ready to use.\n")
     rescue AWS::DynamoDB::Errors::ResourceInUseException
-      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} already exists, skipping creation.\n"
+      AWS::SessionStore::DynamoDB.logger.debug("Table #{config.table_name} already exists, skipping creation.\n")
     end
 
     # Deletes a session table.
