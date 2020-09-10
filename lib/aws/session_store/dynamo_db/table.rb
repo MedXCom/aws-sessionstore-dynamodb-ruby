@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 
 require 'aws-sdk-v1'
-require 'logger'
 
 module AWS::SessionStore::DynamoDB
   # This class provides a way to create and delete a session table.
@@ -27,11 +26,11 @@ module AWS::SessionStore::DynamoDB
           throughput(config.read_capacity, config.write_capacity)
         )
       config.dynamo_db_client.create_table(ddb_options)
-      logger << "Table #{config.table_name} created, waiting for activation...\n"
+      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} created, waiting for activation...\n"
       block_until_created(config)
-      logger << "Table #{config.table_name} is now ready to use.\n"
+      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} is now ready to use.\n"
     rescue AWS::DynamoDB::Errors::ResourceInUseException
-      logger << "Table #{config.table_name} already exists, skipping creation.\n"
+      AWS::SessionStore::DynamoDB.logger << "Table #{config.table_name} already exists, skipping creation.\n"
     end
 
     # Deletes a session table.
@@ -39,11 +38,6 @@ module AWS::SessionStore::DynamoDB
     def delete_table(options = {})
       config = load_config(options)
       config.dynamo_db_client.delete_table(:table_name => config.table_name)
-    end
-
-    # @api private
-    def logger
-      @logger ||= Logger.new($STDOUT)
     end
 
     # Loads configuration options.

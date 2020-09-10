@@ -13,7 +13,6 @@
 
 require 'spec_helper'
 require 'stringio'
-require 'logger'
 
 module AWS
   module SessionStore
@@ -24,7 +23,7 @@ module AWS
           let(:options) { {:table_name => table_name} }
           let(:io) { StringIO.new }
 
-          before { Table.stub(:logger) { Logger.new(io) } }
+          before { AWS::SessionStore::DynamoDB.stub(:logger) { Logger.new(io) } }
 
           it "Creates and deletes a new table" do
             Table.create_table(options)
