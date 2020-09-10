@@ -43,7 +43,7 @@ module Aws::SessionStore::DynamoDB
 
     # @api private
     def logger
-      @logger ||= Logger.new($STDOUT)
+      @logger ||= Aws::SessionStore::DynamoDB.logger
     end
 
     # Loads configuration options.
