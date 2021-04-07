@@ -56,6 +56,10 @@ ConstantHelpers = lambda do
 end
 
 RSpec.configure do |c|
+  c.before(:each) do
+    allow(Aws::SessionStore::DynamoDB).to receive(:logger).and_return(Logger.new('/dev/null'))
+  end
+
   c.before(:each, :integration => true) do
     opts = {:table_name => 'sessionstore-integration-test'}
 

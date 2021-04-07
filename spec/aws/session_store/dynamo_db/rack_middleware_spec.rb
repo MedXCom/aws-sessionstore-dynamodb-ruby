@@ -22,11 +22,11 @@ module Aws
         before { @options = {} }
 
         def ensure_data_updated(mutated_data)
-          dynamo_db_client.should_receive(:update_item) do |options|
+          expect(dynamo_db_client).to receive(:update_item) do |options|
             if mutated_data
-              options[:attribute_updates]["data"].should_not be_nil
+              expect(options[:attribute_updates]["data"]).to_not be_nil
             else
-              options[:attribute_updates]["data"].should be_nil
+              expect(options[:attribute_updates]["data"]).to be_nil
             end
           end
         end
@@ -47,12 +47,12 @@ module Aws
 
         let(:dynamo_db_client) do
           client = double('Aws::DynamoDB::Client')
-          client.stub(:delete_item) { 'Deleted' }
-          client.stub(:list_tables) { {:table_names => ['Sessions']} }
-          client.stub(:get_item) do
+          allow(client).to receive(:delete_item) { 'Deleted' }
+          allow(client).to receive(:list_tables) { {:table_names => ['Sessions']} }
+          allow(client).to receive(:get_item) do
             { :item => { 'data' => sample_packed_data } }
           end
-          client.stub(:update_item) do
+          allow(client).to receive(:update_item) do
             { :attributes => { :created_at => 'now' } }
           end
           client
@@ -61,41 +61,41 @@ module Aws
         context "Testing best case session storage with mock client" do
           it "stores session data in session object" do
             get "/"
-            last_request.session.to_hash.should eq("multiplier" => 1)
+            expect(last_request.session.to_hash).to eq("multiplier" => 1)
           end
 
           it "creates a new HTTP cookie when Cookie not supplied" do
             get "/"
-            last_response.body.should eq('All good!')
-            last_response['Set-Cookie'].should be_truthy
+            expect(last_response.body).to eq('All good!')
+            expect(last_response['Set-Cookie']).to be_truthy
           end
 
           it "loads/manipulates a session based on id from HTTP-Cookie" do
             get "/"
-            last_request.session.to_hash.should eq("multiplier" => 1)
+            expect(last_request.session.to_hash).to eq("multiplier" => 1)
 
             get "/"
-            last_request.session.to_hash.should eq("multiplier" => 2)
+            expect(last_request.session.to_hash).to eq("multiplier" => 2)
           end
 
           it "does not rewrite Cookie if cookie previously/accuarately set" do
             get "/"
-            last_response['Set-Cookie'].should_not be_nil
+            expect(last_response['Set-Cookie']).to_not be_nil
 
             get "/"
-            last_response['Set-Cookie'].should be_nil
+            expect(last_response['Set-Cookie']).to be_nil
           end
 
           it "does not set cookie when defer option is specifed" do
             @options[:defer] = true
             get "/"
-            last_response['Set-Cookie'].should eq(nil)
+            expect(last_response['Set-Cookie']).to eq(nil)
           end
 
           it "creates new sessopm with false/nonexistant http-cookie id" do
             get "/"
-            last_response['Set-Cookie'].should_not eq('1234')
-            last_response['Set-Cookie'].should_not be_nil
+            expect(last_response['Set-Cookie']).to_not eq('1234')
+            expect(last_response['Set-Cookie']).to_not be_nil
           end
 
           it "expires after specified time and sets date for cookie to expire" do
@@ -104,8 +104,8 @@ module Aws
             session_cookie = last_response['Set-Cookie']
 
             get "/"
-            last_response['Set-Cookie'].should_not be_nil
-            last_response['Set-Cookie'].should_not eq(session_cookie)
+            expect(last_response['Set-Cookie']).to_not be_nil
+            expect(last_response['Set-Cookie']).to_not eq(session_cookie)
           end
 
           it "doesn't reset Cookie if not outside expire date" do
@@ -113,24 +113,24 @@ module Aws
             get "/"
             session_cookie = last_response['Set-Cookie']
             get "/"
-            last_response['Set-Cookie'].should eq(session_cookie)
+            expect(last_response['Set-Cookie']).to eq(session_cookie)
           end
 
           it "will not set a session cookie when defer is true" do
             @options[:defer] = true
             get "/"
-            last_response['Set-Cookie'].should eq(nil)
+            expect(last_response['Set-Cookie']).to eq(nil)
           end
 
           it "generates sid and migrates data to new sid when renew is selected" do
             @options[:renew] = true
             get "/"
-            last_request.session.to_hash.should eq("multiplier" => 1)
+            expect(last_request.session.to_hash).to eq("multiplier" => 1)
             session_cookie = last_response['Set-Cookie']
 
             get "/" , "HTTP_Cookie" => session_cookie
-            last_response['Set-Cookie'].should_not eq(session_cookie)
-            last_request.session.to_hash.should eq("multiplier" => 2)
+            expect(last_response['Set-Cookie']).to_not eq(session_cookie)
+            expect(last_request.session.to_hash).to eq("multiplier" => 2)
             session_cookie = last_response['Set-Cookie']
           end
 
