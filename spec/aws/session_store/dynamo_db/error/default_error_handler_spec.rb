@@ -29,34 +29,34 @@ describe Aws::SessionStore::DynamoDB do
 
   context "Error handling for Rack Middleware with default error handler" do
     it "raises error for missing secret key" do
-      client.stub(:update_item).and_raise(missing_key_error)
-      lambda { get "/" }.should raise_error(missing_key_error)
+      expect(client).to receive(:update_item).and_raise(missing_key_error)
+      expect(lambda { get "/" }).to raise_error(missing_key_error)
     end
 
     it "catches exception for inaccurate table name and raises error " do
-      client.stub(:update_item).and_raise(resource_error)
-      lambda { get "/" }.should raise_error(resource_error)
+      expect(client).to receive(:update_item).and_raise(resource_error)
+      expect(lambda { get "/" }).to raise_error(resource_error)
     end
 
     it "catches exception for inaccurate table key" do
-      client.stub(:update_item).and_raise(key_error)
-      client.stub(:get_item).and_raise(key_error)
+      allow(client).to receive(:update_item).and_raise(key_error)
+      allow(client).to receive(:get_item).and_raise(key_error)
       get "/"
-      last_request.env["rack.errors"].string.should include(key_error_msg)
+      expect(last_request.env["rack.errors"].string).to include(key_error_msg)
     end
   end
 
   context "Test ExceptionHandler with true as return value for handle_error" do
     it "raises all errors" do
       @options[:raise_errors] = true
-      client.stub(:update_item).and_raise(client_error)
-      lambda { get "/" }.should raise_error(client_error)
+      expect(client).to receive(:update_item).and_raise(client_error)
+      expect(lambda { get "/" }).to raise_error(client_error)
     end
 
     it "catches exception for inaccurate table key and raises error" do
       @options[:raise_errors] = true
-      client.stub(:update_item).and_raise(key_error)
-      lambda { get "/" }.should raise_error(key_error)
+      expect(client).to receive(:update_item).and_raise(key_error)
+      expect(lambda { get "/" }).to raise_error(key_error)
     end
   end
 end
